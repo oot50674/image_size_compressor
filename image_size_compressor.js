@@ -105,7 +105,7 @@
    * @param {File|Blob} file      원본 이미지 파일
    * @param {Object} options      설정 객체
    *        targetSizeKB  : number (필수) - 목표 크기(KB)
-   *        mimeType      : 'image/jpeg' | 'image/webp' (기본값 'image/jpeg')
+   *        mimeType      : string (기본값 'image/jpeg') - 브라우저가 지원하는 이미지 MIME (예: 'image/jpeg', 'image/webp', 'image/png', 'image/avif')
    *        maxWidth      : number | null - 최대 너비
    *        maxHeight     : number | null - 최대 높이
    *        maxIterations : number (기본값 10) - 품질 탐색 반복 횟수

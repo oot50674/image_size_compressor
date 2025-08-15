@@ -292,11 +292,22 @@
                         <input type="number" id="targetSize" value="300" min="10" max="5000">
                     </div>
                     <div class="setting-item">
-                        <label for="mimeType">출력 형식</label>
-                        <select id="mimeType">
-                            <option value="image/jpeg">JPEG</option>
-                            <option value="image/webp">WebP</option>
-                        </select>
+                        <label for="mimeType">출력 형식 (MIME)</label>
+                        <input id="mimeType" list="mimeList" placeholder="예: image/jpeg, image/webp, image/png" value="image/jpeg">
+                        <datalist id="mimeList">
+                            <option value="image/jpeg"></option>
+                            <option value="image/webp"></option>
+                            <option value="image/png"></option>
+                            <option value="image/avif"></option>
+                            <option value="image/gif"></option>
+                            <option value="image/bmp"></option>
+                            <option value="image/tiff"></option>
+                            <option value="image/jxl"></option>
+                            <option value="image/heif"></option>
+                            <option value="image/heic"></option>
+                            <option value="image/x-icon"></option>
+                            <option value="image/svg+xml"></option>
+                        </datalist>
                     </div>
                     <div class="setting-item">
                         <label for="maxWidth">최대 너비 (px)</label>
@@ -398,16 +409,16 @@
         compressBtn.addEventListener('click', async function() {
             if (!originalFile) return;
 
-            const options = {
-                targetSizeKB: parseInt(document.getElementById('targetSize').value),
-                mimeType: document.getElementById('mimeType').value,
-                maxWidth: parseInt(document.getElementById('maxWidth').value) || null,
-                maxHeight: parseInt(document.getElementById('maxHeight').value) || null,
-                maxIterations: 15,
-                minQuality: 0.1,
-                maxQuality: 0.95,
-                allowScaleDown: true
-            };
+                const options = {
+                    targetSizeKB: parseInt(document.getElementById('targetSize').value),
+                mimeType: (document.getElementById('mimeType').value || 'image/jpeg').trim(),
+                    maxWidth: parseInt(document.getElementById('maxWidth').value) || null,
+                    maxHeight: parseInt(document.getElementById('maxHeight').value) || null,
+                    maxIterations: 15,
+                    minQuality: 0.1,
+                    maxQuality: 0.95,
+                    allowScaleDown: true
+                };
 
             try {
                 compressBtn.disabled = true;
@@ -423,10 +434,17 @@
                 const compressedUrl = URL.createObjectURL(compressedBlob);
                 compressedImage.src = compressedUrl;
 
+                // 요청한 MIME과 실제 결과 MIME 비교 후 안내
+                const requestedMime = (document.getElementById('mimeType').value || 'image/jpeg').trim();
+                const actualMime = compressedBlob.type || '(알 수 없음)';
+                const mimeNote = requestedMime.toLowerCase() !== actualMime.toLowerCase() && actualMime
+                    ? `<br>주의: 요청한 형식(${requestedMime})이 브라우저에서 지원되지 않아 실제로는 ${actualMime} 으로 저장되었습니다.`
+                    : '';
+
                 document.getElementById('compressedInfo').innerHTML = `
                     크기: ${formatFileSize(compressedBlob.size)}<br>
-                    타입: ${compressedBlob.type}<br>
-                    처리 시간: ${processingTime}ms
+                    타입: ${actualMime}<br>
+                    처리 시간: ${processingTime}ms${mimeNote}
                 `;
 
                 // 통계 업데이트
@@ -451,9 +469,38 @@
             const url = URL.createObjectURL(compressedBlob);
             const a = document.createElement('a');
             a.href = url;
-            
-            const extension = document.getElementById('mimeType').value === 'image/jpeg' ? 'jpg' : 'webp';
-            const originalName = originalFile.name.split('.')[0];
+
+            const requestedMime = (document.getElementById('mimeType').value || '').trim();
+            const finalMime = (compressedBlob.type || requestedMime || 'image/jpeg').toLowerCase();
+
+            function mimeToExtension(mime) {
+                const map = {
+                    'image/jpeg': 'jpg',
+                    'image/jpg': 'jpg',
+                    'image/png': 'png',
+                    'image/webp': 'webp',
+                    'image/avif': 'avif',
+                    'image/gif': 'gif',
+                    'image/bmp': 'bmp',
+                    'image/tiff': 'tiff',
+                    'image/jxl': 'jxl',
+                    'image/heif': 'heif',
+                    'image/heic': 'heic',
+                    'image/x-icon': 'ico',
+                    'image/svg+xml': 'svg'
+                };
+                if (map[mime]) return map[mime];
+                if (mime.includes('/')) {
+                    let ext = mime.split('/')[1];
+                    ext = ext.replace('+xml', '');
+                    ext = ext.replace(/;.*/, '');
+                    return ext || 'img';
+                }
+                return 'img';
+            }
+
+            const extension = mimeToExtension(finalMime);
+            const originalName = originalFile.name.replace(/\.[^.]+$/, '');
             a.download = `${originalName}_compressed.${extension}`;
             
             document.body.appendChild(a);

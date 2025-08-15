@@ -8,7 +8,7 @@
 - 🎯 **정확한 크기 제어**: 목표 KB 크기로 압축 (±5KB 오차 범위)
 - 🔄 **이진 탐색 알고리즘**: 효율적인 품질 최적화
 - 📱 **자동 스케일링**: 필요 시 이미지 크기 자동 조절
-- 🖼️ **다중 포맷 지원**: JPEG, WebP 출력 지원
+- 🖼️ **다중 포맷 지원**: 브라우저가 지원하는 임의의 MIME 지정 (JPEG, WebP, PNG, AVIF 등)
 - 🌐 **브라우저 호환**: 최신 브라우저의 Canvas API 활용
 
 ## 데모
@@ -88,7 +88,7 @@ const compressedBlob = await compressImageToTarget(file, options);
 | 옵션 | 타입 | 기본값 | 설명 |
 |------|------|--------|------|
 | `targetSizeKB` | number | - | 목표 파일 크기(KB) **[필수]** |
-| `mimeType` | string | `'image/jpeg'` | 출력 이미지 형식 |
+| `mimeType` | string | `'image/jpeg'` | 출력 이미지 형식 (예: `image/jpeg`, `image/webp`, `image/png`, `image/avif` 등) |
 | `maxWidth` | number\|null | `null` | 최대 너비(픽셀) |
 | `maxHeight` | number\|null | `null` | 최대 높이(픽셀) |
 | `maxIterations` | number | `10` | 품질 최적화 반복 횟수 |
@@ -163,13 +163,17 @@ dropZone.addEventListener('drop', async (e) => {
 
 - PNG 이미지의 경우 투명도 정보가 손실될 수 있습니다 (JPEG 변환 시)
 - 매우 작은 이미지의 경우 목표 크기보다 클 수 있습니다
-- WebP 형식은 지원하지 않는 브라우저가 있을 수 있습니다
+- 브라우저별로 지원하는 MIME이 다릅니다. 지원하지 않는 형식을 요청하면 브라우저가 자동으로 `image/png` 등 지원 가능한 형식으로 대체할 수 있습니다.
+- WebP/AVIF 등 일부 형식은 브라우저에 따라 지원하지 않을 수 있습니다.
 
 ## 라이선스
 
 MIT License
 
 ## 변경 기록
+
+### v1.1.0
+- 출력 형식 입력란을 자유 입력(MIME)으로 확장. 브라우저가 지원하는 임의의 형식 지정 가능
 
 ### v1.0.0
 - 초기 릴리스
